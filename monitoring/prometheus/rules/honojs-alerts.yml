@@ -1,0 +1,126 @@
+groups:
+  - name: honojs-application-alerts
+    rules:
+      # High HTTP error rate
+      - alert: HighErrorRate
+        expr: (rate(honojs_http_requests_total{status_code=~"5.."}[5m]) / rate(honojs_http_requests_total[5m])) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High HTTP error rate detected"
+          description: "HTTP error rate is {{ $value | humanizePercentage }} for the last 5 minutes"
+
+      # High response time
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(honojs_http_request_duration_seconds_bucket[5m])) > 1
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High response time detected"
+          description: "95th percentile response time is {{ $value }}s for the last 5 minutes"
+
+      # Low user registration rate (unusual drop)
+      - alert: LowRegistrationRate
+        expr: rate(honojs_user_registrations_total[1h]) < 0.1
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Unusually low user registration rate"
+          description: "User registration rate has dropped to {{ $value }} registrations per hour"
+
+      # High authentication failure rate
+      - alert: HighAuthFailureRate
+        expr: rate(honojs_auth_failures_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High authentication failure rate"
+          description: "Authentication failure rate is {{ $value }} failures per minute"
+
+      # Scheduler job failures
+      - alert: SchedulerJobFailure
+        expr: increase(honojs_scheduler_job_executions_total{status="failure"}[15m]) > 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Scheduler job failure detected"
+          description: "Job {{ $labels.job_name }} has failed {{ $value }} times in the last 15 minutes"
+
+      # High active connections
+      - alert: HighActiveConnections
+        expr: honojs_http_active_connections > 1000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High number of active HTTP connections"
+          description: "Currently {{ $value }} active HTTP connections"
+
+  - name: honojs-system-alerts
+    rules:
+      # High memory usage
+      - alert: HighMemoryUsage
+        expr: (1 - (honojs_process_resident_memory_bytes / honojs_process_heap_bytes)) < 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage is above 90% for the last 5 minutes"
+
+      # Application down
+      - alert: ApplicationDown
+        expr: up{job="honojs-app"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Hono.js application is down"
+          description: "The main application has been down for more than 1 minute"
+
+      # Database connectivity issues
+      - alert: DatabaseConnectionIssues
+        expr: honojs_database_connections == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Database connection issues"
+          description: "No active database connections detected"
+
+      # Redis connectivity issues
+      - alert: RedisConnectionIssues
+        expr: honojs_redis_connections == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis connection issues"
+          description: "No active Redis connections detected"
+
+  - name: honojs-real-time-alerts
+    rules:
+      # Too many SSE connections
+      - alert: HighSSEConnections
+        expr: sum(honojs_sse_connections) > 10000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High number of SSE connections"
+          description: "Currently {{ $value }} active SSE connections"
+
+      # SSE message rate too high
+      - alert: HighSSEMessageRate
+        expr: rate(honojs_sse_messages_total[1m]) > 1000
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High SSE message rate"
+          description: "SSE message rate is {{ $value }} messages per minute"

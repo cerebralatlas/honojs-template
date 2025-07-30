@@ -1,0 +1,177 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "Hono.js Application Overview",
+    "tags": ["honojs", "application"],
+    "style": "dark",
+    "timezone": "browser",
+    "refresh": "30s",
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "Request Rate",
+        "type": "stat",
+        "gridPos": {"h": 8, "w": 6, "x": 0, "y": 0},
+        "targets": [{
+          "expr": "rate(honojs_http_requests_total[5m])",
+          "legendFormat": "req/sec"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "unit": "reqps"
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "Error Rate",
+        "type": "stat",
+        "gridPos": {"h": 8, "w": 6, "x": 6, "y": 0},
+        "targets": [{
+          "expr": "rate(honojs_http_requests_total{status_code=~\"5..\"}[5m]) / rate(honojs_http_requests_total[5m])",
+          "legendFormat": "error rate"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "unit": "percentunit",
+            "thresholds": {
+              "steps": [
+                {"color": "green", "value": null},
+                {"color": "yellow", "value": 0.01},
+                {"color": "red", "value": 0.05}
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "Response Time P95",
+        "type": "stat",
+        "gridPos": {"h": 8, "w": 6, "x": 12, "y": 0},
+        "targets": [{
+          "expr": "histogram_quantile(0.95, rate(honojs_http_request_duration_seconds_bucket[5m]))",
+          "legendFormat": "p95"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "unit": "s"
+          }
+        }
+      },
+      {
+        "id": 4,
+        "title": "Active Connections",
+        "type": "stat",
+        "gridPos": {"h": 8, "w": 6, "x": 18, "y": 0},
+        "targets": [{
+          "expr": "honojs_http_active_connections",
+          "legendFormat": "connections"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "unit": "short"
+          }
+        }
+      },
+      {
+        "id": 5,
+        "title": "HTTP Requests by Status Code",
+        "type": "timeseries",
+        "gridPos": {"h": 9, "w": 12, "x": 0, "y": 8},
+        "targets": [{
+          "expr": "rate(honojs_http_requests_total[5m])",
+          "legendFormat": "{{status_code}}"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {"drawStyle": "line", "lineInterpolation": "linear"},
+            "color": {"mode": "palette-classic"},
+            "unit": "reqps"
+          }
+        }
+      },
+      {
+        "id": 6,
+        "title": "Response Time Distribution",
+        "type": "timeseries",
+        "gridPos": {"h": 9, "w": 12, "x": 12, "y": 8},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.5, rate(honojs_http_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "p50"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(honojs_http_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "p95"
+          },
+          {
+            "expr": "histogram_quantile(0.99, rate(honojs_http_request_duration_seconds_bucket[5m]))",
+            "legendFormat": "p99"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {"drawStyle": "line", "lineInterpolation": "linear"},
+            "color": {"mode": "palette-classic"},
+            "unit": "s"
+          }
+        }
+      },
+      {
+        "id": 7,
+        "title": "User Activity",
+        "type": "timeseries",
+        "gridPos": {"h": 9, "w": 12, "x": 0, "y": 17},
+        "targets": [
+          {
+            "expr": "rate(honojs_user_registrations_total[1h])",
+            "legendFormat": "registrations/hour"
+          },
+          {
+            "expr": "rate(honojs_user_logins_total[1h])",
+            "legendFormat": "logins/hour"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {"drawStyle": "line", "lineInterpolation": "linear"},
+            "color": {"mode": "palette-classic"},
+            "unit": "short"
+          }
+        }
+      },
+      {
+        "id": 8,
+        "title": "Scheduler Job Status",
+        "type": "timeseries",
+        "gridPos": {"h": 9, "w": 12, "x": 12, "y": 17},
+        "targets": [
+          {
+            "expr": "rate(honojs_scheduler_job_executions_total{status=\"success\"}[5m])",
+            "legendFormat": "{{job_name}} success"
+          },
+          {
+            "expr": "rate(honojs_scheduler_job_executions_total{status=\"failure\"}[5m])",
+            "legendFormat": "{{job_name}} failure"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {"drawStyle": "line", "lineInterpolation": "linear"},
+            "color": {"mode": "palette-classic"},
+            "unit": "short"
+          }
+        }
+      }
+    ]
+  }
+}
