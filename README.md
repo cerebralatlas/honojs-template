@@ -232,7 +232,7 @@ monitoring/          # Enterprise monitoring
 1. **Clone and install dependencies**
 
    ```bash
-   git clone <repository-url>
+   git clone git@github.com:cerebralatlas/honojs-template.git
    cd honojs-template
    pnpm install
    ```
